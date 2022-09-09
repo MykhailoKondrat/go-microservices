@@ -1,0 +1,26 @@
+### Get all products
+GET http://localhost:{{port}}/products
+###  Post new product
+POST http://localhost:{{port}}/
+Content-Type: application/json
+
+{
+  "name": "mycoffe",
+  "description": "desc",
+  "price": 44.11,
+  "sku": "asd-asd-asd"
+}
+
+### Update product by id
+PUT http://localhost:{{port}}/1
+Content-Type: application/json
+
+{
+  "name": "upda",
+  "description": "upda",
+  "price": 44.11,
+  "sku": "asd-asd-asd"
+}
+
+###  Delete product by id
+DELETE http://localhost:{{port}}/products/2
