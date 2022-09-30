@@ -28,30 +28,30 @@ func (g *GzipHandler) GzipMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-type WrappedReponseWriter struct {
+type WrappedResponseWriter struct {
 	rw http.ResponseWriter
 	gw *gzip.Writer
 }
 
-func NewWrappedResponseWriter(rw http.ResponseWriter) *WrappedReponseWriter {
+func NewWrappedResponseWriter(rw http.ResponseWriter) *WrappedResponseWriter {
 	gw := gzip.NewWriter(rw)
 
-	return &WrappedReponseWriter{rw: rw, gw: gw}
+	return &WrappedResponseWriter{rw: rw, gw: gw}
 }
 
-func (wr *WrappedReponseWriter) Header() http.Header {
+func (wr *WrappedResponseWriter) Header() http.Header {
 	return wr.rw.Header()
 }
 
-func (wr *WrappedReponseWriter) Write(d []byte) (int, error) {
+func (wr *WrappedResponseWriter) Write(d []byte) (int, error) {
 	return wr.gw.Write(d)
 }
 
-func (wr *WrappedReponseWriter) WriteHeader(statuscode int) {
+func (wr *WrappedResponseWriter) WriteHeader(statuscode int) {
 	wr.rw.WriteHeader(statuscode)
 }
 
-func (wr *WrappedReponseWriter) Flush() {
+func (wr *WrappedResponseWriter) Flush() {
 	wr.gw.Flush()
 	wr.gw.Close()
 }
