@@ -18,10 +18,17 @@ package handlers
 import (
 	"context"
 	"fmt"
+	protos "github.com/MykhailoKondrat/go-microservices/currency/protos"
 	"github.com/MykhailoKondrat/go-microservices/products/data"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
+
+type GenericError struct {
+	Message string `json:"message"`
+}
 
 // A list of prouducts
 // swagger:response productsResponse
@@ -44,11 +51,12 @@ type productIDParameterWrapper struct {
 }
 
 type Products struct {
-	l *log.Logger
+	l  *log.Logger
+	cc protos.CurrencyClient
 }
 
-func NewProducts(l *log.Logger) *Products {
-	return &Products{l}
+func NewProducts(l *log.Logger, c protos.CurrencyClient) *Products {
+	return &Products{l: l, cc: c}
 }
 
 func (p *Products) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -82,4 +90,17 @@ func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 		req := r.WithContext(ctx)
 		next.ServeHTTP(w, req)
 	})
+}
+func getProductID(r *http.Request) int {
+	// parse the product id from the url
+	vars := mux.Vars(r)
+
+	// convert the id into an integer and return
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		// should never happen
+		panic(err)
+	}
+
+	return id
 }

@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var ErrProductNotFound = fmt.Errorf("product not found")
+
 // swagger:model
 type Product struct {
 	ID          int     `json:"id"`
@@ -94,6 +96,42 @@ func removeProductById(id int, products *[]*Product) error {
 func getNextId() int {
 	lp := productList[len(productList)-1]
 	return lp.ID + 1
+}
+
+// GetProductByID returns a single product which matches the id from the
+// database.
+// If a product is not found this function returns a ProductNotFound error
+func GetProductByID(id int) (*Product, error) {
+	i := findIndexByProductID(id)
+	if id == -1 {
+		return nil, ErrProductNotFound
+	}
+
+	return productList[i], nil
+}
+
+func findIndexByProductID(id int) int {
+	for i, p := range productList {
+		if p.ID == id {
+			return i
+		}
+	}
+
+	return -1
+}
+
+// ToJSON serializes the given interface into a string based JSON format
+func ToJSON(i interface{}, w io.Writer) error {
+	e := json.NewEncoder(w)
+
+	return e.Encode(i)
+}
+
+// FromJSON deserializes the object from JSON string
+// in an io.Reader to the given interface
+func FromJSON(i interface{}, r io.Reader) error {
+	d := json.NewDecoder(r)
+	return d.Decode(i)
 }
 
 var productList = []*Product{

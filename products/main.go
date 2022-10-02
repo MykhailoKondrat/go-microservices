@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	protos "github.com/MykhailoKondrat/go-microservices/currency/protos"
 	"github.com/MykhailoKondrat/go-microservices/products/handlers"
 	"github.com/go-openapi/runtime/middleware"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +19,15 @@ func main() {
 	l := log.New(os.Stdout, "propduct-api", log.LstdFlags)
 	//hh := handlers.NewHello(l)
 	//gb := handlers.NewGoodBuy(l)
-	ph := handlers.NewProducts(l)
+	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	cs := protos.NewCurrencyClient(conn)
+	ph := handlers.NewProducts(l, cs)
+
 	sm := mux.NewRouter()
 	ops := middleware.RedocOpts{
 		SpecURL: "./swagger.yaml",
@@ -26,6 +36,7 @@ func main() {
 
 	getRouter := sm.Methods("GET").Subrouter()
 	getRouter.HandleFunc("/products", ph.GetProducts)
+	getRouter.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
 	getRouter.Handle("/docs", sh)
 
 	putRouter := sm.Methods("PUT").Subrouter()
